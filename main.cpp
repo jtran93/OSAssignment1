@@ -1,6 +1,5 @@
 #include "DataTables.h"
 #include "Device.h"
-#include "Clock.h"
 
 #include <sstream>
 
@@ -17,7 +16,7 @@ int main()
 	
 	int nextRequest = -1;
 	int did = 0;				//Device ID
-	int popFromQ = 0;			//Represents process that went from High/Low Q to Core
+	int popFromQ = -1;			//Represents process that went from High/Low Q to Core, if -1 -> cores were empty
 	
 	
 	int lowStartTime = 500000;	//*LOW* Variables are used to compute the next event to happen.
@@ -54,7 +53,7 @@ int main()
 		device.searchLowestCompletionTime(lowDevicePID, lowDeviceTime, did);
 		
 		
-		if(lowStartTime == lowIOTime && lowStartTime == lowDeviceTime)
+		/*if(lowStartTime == lowIOTime && lowStartTime == lowDeviceTime)
 		{
 			std::cout<<"\nWHAT'S THE ERROR\n";
 			std::cout<<"CURRENT CLOCK TIME: "<<clock<<"\n";
@@ -66,14 +65,16 @@ int main()
 			std::cout<<"LowDevicePID and LowDeviceTime and Device ID: "<<lowDevicePID<<", "<<lowDeviceTime<<", "<<did<<"\n";
 			std::cout<<"\n";
 			return 0;
-		}
+		}*/
+		
 		/*
 			This set of ifelse statements goes through arrival and completion routines
 		*/
 		if(lowStartTime < lowIOTime && lowStartTime < lowDeviceTime)
 		{//Arrival event of lowStartPID
 		 //At arrival time lowStartPID requests a core
-			std::cout<<"--ARRIVAL EVENT--\n";
+			//std::cout<<"--Process "<<lowStartPID<<" ARRIVAL EVENT--\n";
+			
 			ss<<lowStartPID;
 			str = ss.str();
 			
@@ -81,6 +82,8 @@ int main()
 			
 			//Sets the process to either waiting or running depending on if the process grabbed a core, or was put in queue.
 			state = device.CPURequest(clock, data.getTime(process.getFirstLine(lowStartPID)+1), str, process.getPriority(lowStartPID));
+			
+			process.addToCoreTime(lowStartPID, data.getTime(process.getFirstLine(lowStartPID)));
 			
 			process.setProcessState(lowStartPID, state);
 			process.setPriority(lowStartPID, "High");
@@ -91,7 +94,8 @@ int main()
 		}
 		else if (lowIOTime < lowStartTime && lowIOTime < lowDeviceTime)
 		{//Complete IO of lowIOPID and mark nextRequest with the process that completed
-			std::cout<<"--IO Completion--\n";
+			//std::cout<<"--Process "<<lowIOPID<<" IO Completion--\n";
+			
 			ss<<lowIOPID;
 			str = ss.str();
 			
@@ -105,21 +109,30 @@ int main()
 		}
 		else if (lowDeviceTime < lowStartTime && lowDeviceTime < lowIOTime)
 		{//Complete operation of lowDevicePID and nextRequest with process that completed
-			std::cout<<"--Device Completion--";
+			//std::cout<<"--Process "<<lowDevicePID<<" Device Completion--";
+			
 			ss<<lowDevicePID;
 			str = ss.str();
 			
 			if(did == 0 || did == 1)
 			{
-				std::cout<<"--Core Completion--\n";
+				//std::cout<<"--Process "<<lowDevicePID<<" Core Completion--\n";
+				//device.printQs();
+				
 				device.CPUCompletion(clock, did, popFromQ);
 				clock = device.getCompletionTime(did);
-				process.setProcessState(popFromQ, "RUNNING");
-				process.setPriority(lowDevicePID, "Low");
+				if(popFromQ != -1)
+				{
+					process.setProcessState(popFromQ, "RUNNING");
+					std::cout<<device.getCompletionTime(did)<<"\n";
+					process.addToCoreTime(lowDevicePID, data.getTime(process.getCurrentLine(lowDevicePID)));
+				}
+				process.setPriority(lowDevicePID, "High");
 			}
 			else if(did == 2)
 			{
-				std::cout<<"--Disk Completion--\n";
+				//std::cout<<"--Process "<<lowDevicePID<<" Disk Completion--\n";
+				
 				device.DiskCompletion(clock);
 				clock = device.getCompletionTime(did);
 				process.setPriority(lowDevicePID, "Low");
@@ -144,22 +157,28 @@ int main()
 			requestTime = data.getTime(process.getCurrentLine(nextRequest));
 			if(operation == "CORE")
 			{
-				std::cout<<"--Core Request--\n";
+				//std::cout<<"--Process "<<nextRequest<<" Core Request--\n";
+				
 				state = device.CPURequest(clock, requestTime, str, process.getPriority(nextRequest));
+				std::cout<<requestTime<<"\n";
+				process.addToCoreTime(nextRequest, requestTime);
 				process.setProcessState(nextRequest, state);
 			}
 			else if(operation == "I/O")
 			{
-				std::cout<<"--IO Request--\n";
+				//std::cout<<"--Process "<<nextRequest<<" IO Request--\n";
+				
 				process.setProcessState(nextRequest, "WAITING");
 				process.IORequest(clock, nextRequest, requestTime);
 			}
 			else if(operation == "DISK")
 			{
-				std::cout<<"--Disk Request--\n";
+				//std::cout<<"--Process "<<nextRequest<<" Disk Request--\n";
+				
 				if(requestTime == 0)
 				{
-					std::cout<<"--DISK CORE Request--\n";
+					//std::cout<<"--Process "<<nextRequest<<" DISK CORE Request--\n";
+					
 					process.incrementCurrentLine(nextRequest);
 					operation = data.getOperation(process.getCurrentLine(nextRequest));
 					state = requestTime = data.getTime(process.getCurrentLine(nextRequest));
@@ -185,9 +204,8 @@ int main()
 				process.printProcessTable(data);
 				process.removeProcess(nextRequest);
 				
-				device.printDevice();
-				process.printIOCompletion();
-				
+				//device.printDevice();
+				//process.printIOCompletion();
 				
 			}
 		}

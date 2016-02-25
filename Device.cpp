@@ -46,6 +46,8 @@ std::string Device::CPURequest(int clock, int requestTime, std::string process, 
 	
 	if(deviceStatus[0] == "Free")
 	{
+		//std::cout<<"Process "<<process<<" is at CORE "<<0<<"\n";
+		
 		deviceStatus[0] = process;
 		completionTime[0] = clock + requestTime;
 		coreBusyTimes = coreBusyTimes + requestTime;
@@ -53,6 +55,8 @@ std::string Device::CPURequest(int clock, int requestTime, std::string process, 
 	}
 	else if(deviceStatus[1] == "Free")
 	{
+		//std::cout<<"Process "<<process<<" is at CORE "<<1<<"\n";
+		
 		deviceStatus[1] = process;
 		completionTime[1] = clock + requestTime;
 		coreBusyTimes = coreBusyTimes + requestTime;
@@ -60,24 +64,41 @@ std::string Device::CPURequest(int clock, int requestTime, std::string process, 
 	}
 	else
 	{
+		//std::cout<<"WHICH Q DO I GO TO? "<<priority<<"\n";
 		if(priority == "High")
+		{
+			//std::cout<<"Process "<< process<<" went to *HIGH* Q\n";
+			
 			highQ.push_back(process);
-		else if(priority == " Low")
+		}
+		else if(priority == "Low")
+		{
+			//std::cout<<"Process "<< process<<" went to *LOW* Q\n";
+			
 			lowQ.push_back(process);
+		}
 		return "READY";
 	}
 }
 
 void Device::CPUCompletion(int clock, int did, int& popFromQ)
 {
+	
 	if(highQ.empty() == true && lowQ.empty() == true)
 	{
+		//std::cout<<"CORE Qs are empty!\n";
+		
+		
+		
 		deviceStatus[did] = "Free";
 	}
 	else
 	{
 		if(highQ.empty() == false)
 		{
+			//std::cout<<"Process "<<highQ.front()<<" from *HIGH* Q to CORE "<<did<<"\n";
+			
+			
 			deviceStatus[did] = highQ.front();
 			completionTime[did] = clock + highQTime.front();
 			coreBusyTimes = coreBusyTimes + highQTime.front();
@@ -86,8 +107,12 @@ void Device::CPUCompletion(int clock, int did, int& popFromQ)
 			
 			popFromQ = atoi(deviceStatus[did].c_str());
 		}
-		else
+		else if(lowQ.empty() == false)
 		{
+			//std::cout<<"Process "<<lowQ.front()<<" from *LOW* Q to CORE "<<did<<"\n";
+			
+			
+			
 			deviceStatus[did] = lowQ.front();
 			completionTime[did] = clock + lowQTime.front();
 			coreBusyTimes = coreBusyTimes + lowQTime.front();
@@ -110,8 +135,10 @@ void Device::DiskRequest(int clock, int requestTime, std::string process)
 	}
 	else
 	{
-			diskQ.push_back(process);
-			diskQTime.push_back(requestTime);
+		//std::cout<<"Process "<<process<<" goes to *DISK* Q\n";
+		
+		diskQ.push_back(process);
+		diskQTime.push_back(requestTime);
 	}
 }
 
@@ -119,10 +146,18 @@ void Device::DiskCompletion(int clock)
 {
 	if(diskQ.empty() == true)
 	{
+		
+		//std::cout<<"DISK Q is empty!\n";
+		
+		
+		
 		deviceStatus[2] = "Free";
 	}
 	else
 	{
+		//std::cout<<"Process "<<diskQ.front()<<" from *DISK* Q to DISK\n";
+		
+		
 		deviceStatus[2] = diskQ.front();
 		completionTime[2] = diskQTime.front() + clock;
 		diskQ.pop_front();

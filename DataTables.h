@@ -40,6 +40,8 @@ class ProcessT
 		void setHasStarted(int pid);
 		void setIOCompletionTime(int pid, int requestTime);
 		void incrementCurrentLine(int pid);
+		void addToProcessTime(int pid, int time);
+		void addToCoreTime(int pid, int time);
 		
 		//Get functions
 		std::vector<int> getStartTime();
@@ -66,5 +68,7 @@ class ProcessT
 		std::vector<std::string> processState;
 		std::vector<int> IOCompletionTime;
 		std::vector<std::string> priority;
+		std::vector<int> processTime;
+		std::vector<int> processCoreTime;
 };
 #endif

@@ -22,6 +22,8 @@ void ProcessT::addDataToProcess(DataT data)
 			processState.push_back("Waiting");
 			priority.push_back("High");
 			completionT = 0;
+			processTime.push_back(0);
+			processCoreTime.push_back(0);
 		}		
 	}
 	
@@ -38,18 +40,8 @@ void ProcessT::printProcessTable(DataT data)
 	{
 		if(processState[i] != "Done")
 		{
-			start = firstLine[i];
-			end = lastLine[i];
 			
-			for(start; start<end; start++)
-			{
-				if(data.getOperation(start) == "CORE")
-				{
-					coreTime = coreTime + data.getTime(start);
-				}
-			}
-			std::cout<<"Process "<<i<<" started at "<<startTime[i]<<", got "<<coreTime<<" ms of CORE time and is "<<processState[i]<<"\n";
-		coreTime = 0;
+			std::cout<<"Process "<<i<<" started at "<<startTime[i]<<", got "<<processCoreTime[i]<<" ms of CORE time and is "<<processState[i]<<"\n";
 		}
 	}
 	std::cout<<"\n";
@@ -106,6 +98,17 @@ void ProcessT::setIOCompletionTime(int pid, int requestTime)
 void ProcessT::incrementCurrentLine(int pid)
 {
 	currentLine[pid]++;
+}
+
+void ProcessT::addToProcessTime(int pid, int time)
+{
+	processTime[pid] = processTime[pid] + time;
+}
+
+void ProcessT::addToCoreTime(int pid, int time)
+{
+	processCoreTime[pid] = processCoreTime[pid] + time;
+	std::cout<<"Process "<<pid<<" has "<<processCoreTime[pid]<<" core time\n";
 }
 
 std::vector<int> ProcessT::getStartTime()

@@ -1,0 +1,19 @@
+A core request for a process is completed with no processes in the queues.
+This causes all cores to be free and DISK and IO just happen to be free at this point.
+The process' next request is END, so program goes through termination routine (printing data, removing process, etc.).
+Next request is never grabbed causing all *LOW* values to be equal, hence the loop.
+
+Possibilities
+	-Qs are not implmented correctly
+	-Termination routine is not implemented correctly
+	
+What to do
+	-Trace the code with the input values
+	
+=======
+=FIXED=
+=======
+When testing for prioirty of process to determine whether it goes to HighQ or LowQ,
+there was a typo. "Low" was entered " Low"
+
+
