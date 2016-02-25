@@ -1,5 +1,4 @@
 #include "DataTables.h"
-#include "Global.h"
 
 void ProcessT::addDataToProcess(DataT data)
 {
@@ -13,7 +12,7 @@ void ProcessT::addDataToProcess(DataT data)
 		{
 			startTime.push_back(data.getTime(i));
 			firstLine.push_back(i);				
-			currentLine.push_back(i+1);
+			currentLine.push_back(i);
 			hasStarted.push_back('N');
 		}
 		else if(data.getOperation(i) == "END")
@@ -53,6 +52,7 @@ void ProcessT::printProcessTable(DataT data)
 		coreTime = 0;
 		}
 	}
+	std::cout<<"\n";
 }
 
 void ProcessT::printProcess(int pid)
@@ -60,14 +60,22 @@ void ProcessT::printProcess(int pid)
 	std::cout<<"Process "<<pid<<" started at "<<startTime[pid]<<", got  ms of CORE time and is "<<processState[pid]<<"\n";
 }
 
+void ProcessT::printIOCompletion()
+{
+	for(int i = 0; i<IOCompletionTime.size(); i++)
+	{
+		std::cout<<"IO completion time for process "<<i<<": "<<IOCompletionTime[i]<<"\n";
+	}
+}
+
 void ProcessT::removeProcess(int pid)
 {
 	processState[pid] = "Done";
 }
 
-void ProcessT::IORequest(int pid, int requestTime)
+void ProcessT::IORequest(int clock, int pid, int requestTime)
 {
-	IOCompletionTime[pid] = totalElapsedTime + requestTime;
+	IOCompletionTime[pid] = clock + requestTime;
 }
 
 void ProcessT::IOCompletion(int pid)
@@ -80,9 +88,24 @@ void ProcessT::setPriority(int pid, std::string pri)
 	priority[pid] = pri;
 }
 
+void ProcessT::setProcessState(int pid, std::string state)
+{
+	processState[pid] = state;
+}
+
+void ProcessT::setHasStarted(int pid)
+{
+	hasStarted[pid] = 'Y';
+}
+
+void ProcessT::setIOCompletionTime(int pid, int requestTime)
+{
+	IOCompletionTime[pid] = requestTime;
+}
+
 void ProcessT::incrementCurrentLine(int pid)
 {
-	currentLine[i]++;
+	currentLine[pid]++;
 }
 
 std::vector<int> ProcessT::getStartTime()
@@ -147,7 +170,15 @@ void ProcessT::searchLowestIOTime(int& pid, int& time)
 	}
 }
 
-
+bool ProcessT::searchProcessRemaining()
+{
+	for (int i = 0; i < startTime.size(); i++)
+	{
+		if(processState[i] != "Done")
+			return true;
+	}
+	return false;
+}
 
 
 

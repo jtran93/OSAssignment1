@@ -28,13 +28,17 @@ class ProcessT
 		void addDataToProcess(DataT data);
 		void printProcessTable(DataT data);
 		void printProcess(int pid);
+		void printIOCompletion();
 		void removeProcess(int pid);
 		
-		void IORequest(int pid, int requestTime);
+		void IORequest(int clock, int pid, int requestTime);
 		void IOCompletion(int pid);
 		
 		//Set functions
 		void setPriority(int pid, std::string pri);
+		void setProcessState(int pid, std::string state);
+		void setHasStarted(int pid);
+		void setIOCompletionTime(int pid, int requestTime);
 		void incrementCurrentLine(int pid);
 		
 		//Get functions

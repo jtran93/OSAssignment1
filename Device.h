@@ -1,6 +1,9 @@
 #ifndef Device_h
 #define Device_h
 
+#include <iomanip>
+#include <cstdlib>
+#include <sstream>
 #include <iostream>
 #include <deque>
 #include <string>
@@ -12,18 +15,21 @@ class Device
 		Device(void);
 		void printDevice();
 		
-		void CPURequest(int requestTime, std::string process, std::string priority);
-		void CPUCompletion(int did);
-		void DiskRequest(int requestTime, std::string process);
-		void DiskCompletion();
-		void IORequest();
-		void IOCompletion();
+		std::string CPURequest(int clock, int requestTime, std::string process, std::string priority);
+		void CPUCompletion(int clock, int did, int& popFromQ);
+		void DiskRequest(int clock, int requestTime, std::string process);
+		void DiskCompletion(int clock);
 		
 		void searchLowestCompletionTime(int& pid, int& time, int& did);
 		
+		int getCompletionTime(int device);
+		void resetCompletionTime(); //reset completion time if device is free to 0
+		
+		void printQs();
 		void printHighQ();
 		void printLowQ();
 		void printDiskQ();
+		void printCoreData(int clock);
 		
 	private:
 		
@@ -38,11 +44,6 @@ class Device
 		
 		int coreBusyTimes;
 		int diskBusyTimes;
-		int did; //Device ID
-		int crt; //Core request time
-		int drt; //Disk request time
-		int IOrt; //IO request time
-		double coreUtilization;
 		
 };
 

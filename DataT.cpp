@@ -1,5 +1,4 @@
 #include "DataTables.h"
-#include "Global.h"
 
 void DataT::readData()
 {
