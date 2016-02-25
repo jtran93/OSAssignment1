@@ -2,7 +2,7 @@
 #define Device_h
 
 #include <iostream>
-#include <queue>
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -12,25 +12,29 @@ class Device
 		Device(void);
 		void printDevice();
 		
-		void CPURequest(int clock, int crt, std::string process, std::string priority);
-		void CPUCompletion(int did, int clock);
-		void DiskRequest(int clock, int requestTime, std::string process);
-		void DiskCompletion(int clock);
+		void CPURequest(int requestTime, std::string process, std::string priority);
+		void CPUCompletion(int did);
+		void DiskRequest(int requestTime, std::string process);
+		void DiskCompletion();
 		void IORequest();
 		void IOCompletion();
 		
-		void searchLowestCompletionTime(int& pid, int& time);
+		void searchLowestCompletionTime(int& pid, int& time, int& did);
+		
+		void printHighQ();
+		void printLowQ();
+		void printDiskQ();
 		
 	private:
 		
 		std::vector<std::string> deviceStatus;
 		std::vector<int> completionTime;
-		std::queue<std::string> highQ;
-		std::queue<int> highQTime;
-		std::queue<std::string> lowQ;
-		std::queue<int> lowQTime;
-		std::queue<std::string> diskQ;
-		std::queue<int> diskQTime;
+		std::deque<std::string> highQ;
+		std::deque<int> highQTime;
+		std::deque<std::string> lowQ;
+		std::deque<int> lowQTime;
+		std::deque<std::string> diskQ;
+		std::deque<int> diskQTime;
 		
 		int coreBusyTimes;
 		int diskBusyTimes;

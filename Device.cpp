@@ -5,11 +5,9 @@
    Index 0 = Core0
    Index 1 = Core1
    Index 2 = Disk
-   Index 3 = Input
    
-	Each operation can contain busy/free/process
+	Each operation can contain free/process ID
 	Completion time = the time the process will be on that operation
-					= 0 if it is free
 				
 	Events
 		Arrival of new process
@@ -43,30 +41,30 @@ void Device::printDevice()
 	}
 }
 
-void Device::CPURequest(int clock, int requestTime, std::string process, std::string priority)
+void Device::CPURequest(int requestTime, std::string process, std::string priority)
 {
 	if(deviceStatus[0] == "Free")
 	{
 		deviceStatus[0] = process;
-		completionTime[0] = clock + requestTime;
+		completionTime[0] = totalElapsedTime + requestTime;
 		coreBusyTimes = coreBusyTimes + requestTime;
 	}
 	else if(deviceStatus[1] == "Free")
 	{
 		deviceStatus[1] = process;
-		completionTime[1] = clock + requestTime;
+		completionTime[1] = totalElapsedTime + requestTime;
 		coreBusyTimes = coreBusyTimes + requestTime;
 	}
 	else
 	{
 		if(priority == "High")
-			highQ.push(process);
+			highQ.push_back(process);
 		else if(priority == " Low")
-			lowQ.push(process);
+			lowQ.push_back(process);
 	}
 }
 
-void Device::CPUCompletion(int did, int clock)
+void Device::CPUCompletion(int did)
 {
 	if(highQ.empty() == true && lowQ.empty() == true)
 	{
@@ -77,48 +75,50 @@ void Device::CPUCompletion(int did, int clock)
 		if(highQ.empty() == false)
 		{
 			deviceStatus[did] = highQ.front();
-			completionTime[did] = clock + highQTime.front();
+			completionTime[did] = totalElapsedTime + highQTime.front();
 			coreBusyTimes = coreBusyTimes + highQTime.front();
-			highQ.pop();
-			highQTime.pop();
+			highQ.pop_front();
+			highQTime.pop_front();
 		}
 		else
 		{
 			deviceStatus[did] = lowQ.front();
-			completionTime[did] = clock + lowQTime.front();
+			completionTime[did] = totalElapsedTime + lowQTime.front();
 			coreBusyTimes = coreBusyTimes + lowQTime.front();
-			lowQ.pop();
-			lowQTime.pop();
+			lowQ.pop_front();
+			lowQTime.pop_front();
 		}
 	}
 	
 }
 
-void Device::DiskRequest(int clock, int requestTime, std::string process)
+void Device::DiskRequest(int requestTime, std::string process)
 {
 	if(deviceStatus[2] == "Free")
 	{
 		deviceStatus[2] = process;
-		completionTime[2] = clock + requestTime;
+		completionTime[2] = totalElapsedTime + requestTime;
 		diskBusyTimes = diskBusyTimes + requestTime;
 	}
 	else
 	{
-			diskQ.push(process);
-			diskQTime.push(requestTime);
+			diskQ.push_back(process);
+			diskQTime.push_back(requestTime);
 	}
 }
 
-void Device::DiskCompletion(int clock)
+void Device::DiskCompletion()
 {
 	if(diskQ.empty() == true)
 	{
-		deviceStatus[2] == "Free";
+		deviceStatus[2] = "Free";
 	}
 	else
 	{
 		deviceStatus[2] = diskQ.front();
-		completionTime[2] = diskQTime.front() + clock;
+		completionTime[2] = diskQTime.front() + totalElapsedTime;
+		diskQ.pop_front();
+		diskQTime.pop_front();
 	}
 }
 
@@ -126,20 +126,63 @@ void Device::searchLowestCompletionTime(int& pid, int& time)
 {
 	for(int i = 0; i<3; i++)
 	{
-		if(deviceStatus[i] != "Free" && i == 0)
+		if(deviceStatus[i] != "Free" && completionTime[i]<time && completionTime[i] != 0)
 		{
-			pid = i;
+			pid = deviceStatus[i];
 			time = completionTime[i];
-		}
-		else if(deviceStatus[i] != "Free" && completionTime[i]<time)
-		{
-			pid = i;
-			time = completionTime[i];
+			did = i;
 		}
 	}
 	
 }
 
+void Device::printHighQ()
+{
+	std::cout<<"HIGH-PRIORITY READY QUEUE:\n";
+	if(highQ.empty() != true)
+	{
+		for(int i = 0; i < highQ.size(); i++)
+		{
+			std::cout<<"Process "<<highQ[i]<<"\n";
+		}
+	}
+	else
+	{
+		std::cout<<"EMPTY\n";
+	}
+}
+
+void Device::printLowQ()
+{
+	std::cout<<"LOW-PRIORITY READY QUEUE:\n";
+	if(lowQ.empty() != true)
+	{
+		for(int i = 0; i < lowQ.size(); i++)
+		{
+			std::cout<<"Process "<<lowQ[i]<<"\n";
+		}
+	}
+	else
+	{
+		std::cout<<"EMPTY\n";
+	}
+}
+
+void Device::printDiskQ()
+{
+	std::cout<<"DISK QUEUE:\n";
+	if(diskQ.empty() != true)
+	{
+		for(int i = 0; i < diskQ.size(); i++)
+		{
+			std::cout<<"Process "<<diskQ[i]<<"\n";
+		}
+	}
+	else
+	{
+		std::cout<<"EMPTY\n";
+	}
+}
 
 
 
