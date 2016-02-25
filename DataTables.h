@@ -30,25 +30,18 @@ class ProcessT
 		void printProcess(int pid);
 		void removeProcess(int pid);
 		
-		void IORequest(int pid, int requestTime);
+		void IORequest(int pid, int clock, int requestTime);
 		void IOCompletion(int pid);
 		
-		//Set functions
 		void setPriority(int pid, std::string pri);
-		void incrementCurrentLine(int pid);
-		
-		//Get functions
-		std::vector<int> getStartTime();
-		int getFirstLine(int pid);
-		int getLastLine(int pid);
-		int getCurrentLine(int pid);
-		std::string getProcessState(int pid);
-		int getIOCompletionTime(int pid);
 		std::string getPriority(int pid);
+		std::vector<int> getStartTime();
+		/*
+			Have to add get and set functions for vectors
+		*/
 		
 		void searchLowestStartTime(int& pid, int& time);
 		void searchLowestIOTime(int& pid, int& time);
-		bool searchProcessRemaining();
 		
 		
 		

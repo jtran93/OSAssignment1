@@ -3,9 +3,10 @@
 
 void ProcessT::addDataToProcess(DataT data)
 {
+	int dataSize = data.getSize();	
 	int completionT = 0;
 
-	for(int i = 0; i < data.getSize(); i++)
+	for(int i = 0; i < dataSize; i++)
 	{
 		completionT = completionT + data.getTime(i);
 		
@@ -13,16 +14,16 @@ void ProcessT::addDataToProcess(DataT data)
 		{
 			startTime.push_back(data.getTime(i));
 			firstLine.push_back(i);				
-			currentLine.push_back(i+1);
+			currentLine.push_back(i);
 			hasStarted.push_back('N');
 		}
 		else if(data.getOperation(i) == "END")
 		{	
 			lastLine.push_back(i);
-			IOCompletionTime.push_back(0);
+			IOCompletionTime.push_back(completionT);
 			processState.push_back("Waiting");
-			priority.push_back("High");
 			completionT = 0;
+			priority.push_back("High");
 		}		
 	}
 	
@@ -35,7 +36,8 @@ void ProcessT::printProcessTable(DataT data)
 	int start = 0;
 	int end = 0;
 	
-	for (int i = 0; i < startTime.size(); i++)
+	int size = startTime.size();
+	for (int i = 0; i < size; i++)
 	{
 		if(processState[i] != "Done")
 		{
@@ -65,9 +67,9 @@ void ProcessT::removeProcess(int pid)
 	processState[pid] = "Done";
 }
 
-void ProcessT::IORequest(int pid, int requestTime)
+void ProcessT::IORequest(int pid, int clock, int requestTime)
 {
-	IOCompletionTime[pid] = totalElapsedTime + requestTime;
+	IOCompletionTime[pid] = clock + requestTime;
 }
 
 void ProcessT::IOCompletion(int pid)
@@ -80,39 +82,9 @@ void ProcessT::setPriority(int pid, std::string pri)
 	priority[pid] = pri;
 }
 
-void ProcessT::incrementCurrentLine(int pid)
-{
-	currentLine[i]++;
-}
-
 std::vector<int> ProcessT::getStartTime()
 {
 	return startTime;
-}
-
-int ProcessT::getFirstLine(int pid)
-{
-	return firstLine[pid];
-}
-
-int ProcessT::getLastLine(int pid)
-{
-	return lastLine[pid];
-}
-
-int ProcessT::getCurrentLine(int pid)
-{
-	return currentLine[pid];
-}
-
-std::string ProcessT::getProcessState(int pid)
-{
-	return processState[pid];
-}
-
-int ProcessT::getIOCompletionTime(int pid)
-{
-	return IOCompletionTime[pid];
 }
 
 std::string ProcessT::getPriority(int pid)
@@ -122,10 +94,16 @@ std::string ProcessT::getPriority(int pid)
 
 void ProcessT::searchLowestStartTime(int& pid, int& time)
 {
+	int size = startTime.size();
 	
-	for(int i = 0; i < startTime.size(); i++)
+	for(int i = 0; i < size; i++)
 	{
-		if(startTime[i]<time && hasStarted[i]=='N')
+		if (i == 0)
+		{
+			time = startTime[i];
+			pid = i;
+		}
+		else if(startTime[i]<time && hasStarted[i]=='N')
 		{
 			time = startTime[i];
 			pid = i;
@@ -136,10 +114,16 @@ void ProcessT::searchLowestStartTime(int& pid, int& time)
 
 void ProcessT::searchLowestIOTime(int& pid, int& time)
 {
+	int size = IOCompletionTime.size();
 	
-	for(int i = 0; i < IOCompletionTime.size(); i++)
+	for(int i = 0; i < size; i++)
 	{
-		if(IOCompletionTime[i] != 0 && IOCompletionTime[i]<time)
+		if (i == 0)
+		{
+			time = IOCompletionTime[i];
+			pid = i;
+		}
+		else if(IOCompletionTime[i]<time)
 		{
 			time = IOCompletionTime[i];
 			pid = i;
