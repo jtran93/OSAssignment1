@@ -45,21 +45,23 @@ std::string Device::CPURequest(int clock, int requestTime, std::string process, 
 {
 	
 	if(deviceStatus[0] == "Free")
-	{
-		//std::cout<<"Process "<<process<<" is at CORE "<<0<<"\n";
-		
+	{	
 		deviceStatus[0] = process;
 		completionTime[0] = clock + requestTime;
 		coreBusyTimes = coreBusyTimes + requestTime;
+		
+		//std::cout<<"Process "<<process<<" is at device "<<0<<" |CompletionT: "<<completionTime[0]<<"\n";
+		
 		return "RUNNING";
 	}
 	else if(deviceStatus[1] == "Free")
 	{
-		//std::cout<<"Process "<<process<<" is at CORE "<<1<<"\n";
-		
 		deviceStatus[1] = process;
 		completionTime[1] = clock + requestTime;
 		coreBusyTimes = coreBusyTimes + requestTime;
+		
+		//std::cout<<"Process "<<process<<" is at device "<<1<<" |CompletionT: "<<completionTime[1]<<"\n";
+		
 		return "RUNNING";
 	}
 	else
@@ -67,15 +69,17 @@ std::string Device::CPURequest(int clock, int requestTime, std::string process, 
 		//std::cout<<"WHICH Q DO I GO TO? "<<priority<<"\n";
 		if(priority == "High")
 		{
-			//std::cout<<"Process "<< process<<" went to *HIGH* Q\n";
+			//std::cout<<"Process "<< process<<" went to *HIGH* Q with time "<<requestTime<<"\n";
 			
 			highQ.push_back(process);
+			highQTime.push_back(requestTime);
 		}
 		else if(priority == "Low")
 		{
-			//std::cout<<"Process "<< process<<" went to *LOW* Q\n";
+			//std::cout<<"Process "<< process<<" went to *LOW* Q with time "<<requestTime<<"\n";
 			
 			lowQ.push_back(process);
+			lowQTime.push_back(requestTime);
 		}
 		return "READY";
 	}
@@ -87,18 +91,12 @@ void Device::CPUCompletion(int clock, int did, int& popFromQ)
 	if(highQ.empty() == true && lowQ.empty() == true)
 	{
 		//std::cout<<"CORE Qs are empty!\n";
-		
-		
-		
 		deviceStatus[did] = "Free";
 	}
 	else
 	{
 		if(highQ.empty() == false)
 		{
-			//std::cout<<"Process "<<highQ.front()<<" from *HIGH* Q to CORE "<<did<<"\n";
-			
-			
 			deviceStatus[did] = highQ.front();
 			completionTime[did] = clock + highQTime.front();
 			coreBusyTimes = coreBusyTimes + highQTime.front();
@@ -106,12 +104,11 @@ void Device::CPUCompletion(int clock, int did, int& popFromQ)
 			highQTime.pop_front();
 			
 			popFromQ = atoi(deviceStatus[did].c_str());
+			
+			//std::cout<<"Process "<<popFromQ<<" from *HIGH* Q to device "<<did<<" |CompletionT: "<<completionTime[did]<<"\n";
 		}
 		else if(lowQ.empty() == false)
 		{
-			//std::cout<<"Process "<<lowQ.front()<<" from *LOW* Q to CORE "<<did<<"\n";
-			
-			
 			
 			deviceStatus[did] = lowQ.front();
 			completionTime[did] = clock + lowQTime.front();
@@ -120,6 +117,8 @@ void Device::CPUCompletion(int clock, int did, int& popFromQ)
 			lowQTime.pop_front();
 			
 			popFromQ = atoi(deviceStatus[did].c_str());
+			
+			//std::cout<<"Process "<<popFromQ<<" from *LOW* Q to device "<<did<<" |CompletionT: "<<completionTime[did]<<"\n";
 		}
 	}
 	
@@ -208,7 +207,7 @@ void Device::printHighQ()
 	{
 		for(int i = 0; i < highQ.size(); i++)
 		{
-			std::cout<<"Process "<<highQ[i]<<"\n";
+			std::cout<<"Process "<<highQ[i]<<" Request Time: "<<highQTime[i]<<"\n";
 		}
 	}
 	else
@@ -224,7 +223,7 @@ void Device::printLowQ()
 	{
 		for(int i = 0; i < lowQ.size(); i++)
 		{
-			std::cout<<"Process "<<lowQ[i]<<"\n";
+			std::cout<<"Process "<<lowQ[i]<<" Request Time: "<<lowQTime[i]<<"\n";
 		}
 	}
 	else
@@ -240,7 +239,7 @@ void Device::printDiskQ()
 	{
 		for(int i = 0; i < diskQ.size(); i++)
 		{
-			std::cout<<"Process "<<diskQ[i]<<"\n";
+			std::cout<<"Process "<<diskQ[i]<<" Request Time: "<<diskQTime[i]<<"\n";
 		}
 	}
 	else

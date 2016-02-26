@@ -52,8 +52,7 @@ int main()
 		process.searchLowestIOTime(lowIOPID, lowIOTime);
 		device.searchLowestCompletionTime(lowDevicePID, lowDeviceTime, did);
 		
-		
-		/*if(lowStartTime == lowIOTime && lowStartTime == lowDeviceTime)
+		if(lowStartTime == lowIOTime && lowStartTime == lowDeviceTime)
 		{
 			std::cout<<"\nWHAT'S THE ERROR\n";
 			std::cout<<"CURRENT CLOCK TIME: "<<clock<<"\n";
@@ -65,7 +64,8 @@ int main()
 			std::cout<<"LowDevicePID and LowDeviceTime and Device ID: "<<lowDevicePID<<", "<<lowDeviceTime<<", "<<did<<"\n";
 			std::cout<<"\n";
 			return 0;
-		}*/
+		}
+		
 		
 		/*
 			This set of ifelse statements goes through arrival and completion routines
@@ -83,7 +83,9 @@ int main()
 			//Sets the process to either waiting or running depending on if the process grabbed a core, or was put in queue.
 			state = device.CPURequest(clock, data.getTime(process.getFirstLine(lowStartPID)+1), str, process.getPriority(lowStartPID));
 			
-			process.addToCoreTime(lowStartPID, data.getTime(process.getFirstLine(lowStartPID)));
+			if(state == "RUNNING")
+				process.addToCoreTime(lowStartPID, data.getTime(process.getFirstLine(lowStartPID)+1));
+		
 			
 			process.setProcessState(lowStartPID, state);
 			process.setPriority(lowStartPID, "High");
@@ -101,13 +103,15 @@ int main()
 			
 			process.IOCompletion(lowIOPID);
 			process.setPriority(lowIOPID, "High");
+			
 			clock = process.getIOCompletionTime(lowIOPID);
+			
 			process.setIOCompletionTime(lowIOPID, 0);
 			
 			process.incrementCurrentLine(lowIOPID);
 			nextRequest = lowIOPID;
 		}
-		else if (lowDeviceTime < lowStartTime && lowDeviceTime < lowIOTime)
+		else //if (lowDeviceTime < lowStartTime && lowDeviceTime < lowIOTime)
 		{//Complete operation of lowDevicePID and nextRequest with process that completed
 			//std::cout<<"--Process "<<lowDevicePID<<" Device Completion--";
 			
@@ -121,11 +125,12 @@ int main()
 				
 				device.CPUCompletion(clock, did, popFromQ);
 				clock = device.getCompletionTime(did);
+				
+				
 				if(popFromQ != -1)
 				{
 					process.setProcessState(popFromQ, "RUNNING");
-					std::cout<<device.getCompletionTime(did)<<"\n";
-					process.addToCoreTime(lowDevicePID, data.getTime(process.getCurrentLine(lowDevicePID)));
+					process.addToCoreTime(popFromQ, data.getTime(process.getCurrentLine(popFromQ)));
 				}
 				process.setPriority(lowDevicePID, "High");
 			}
@@ -158,10 +163,14 @@ int main()
 			if(operation == "CORE")
 			{
 				//std::cout<<"--Process "<<nextRequest<<" Core Request--\n";
+				//std::cout<<"Process "<<nextRequest<<" RequestT "<<requestTime<<"\n";
 				
 				state = device.CPURequest(clock, requestTime, str, process.getPriority(nextRequest));
-				std::cout<<requestTime<<"\n";
-				process.addToCoreTime(nextRequest, requestTime);
+				
+				if(state == "RUNNING")
+				{
+					process.addToCoreTime(nextRequest, requestTime);
+				}
 				process.setProcessState(nextRequest, state);
 			}
 			else if(operation == "I/O")
@@ -181,10 +190,19 @@ int main()
 					
 					process.incrementCurrentLine(nextRequest);
 					operation = data.getOperation(process.getCurrentLine(nextRequest));
-					state = requestTime = data.getTime(process.getCurrentLine(nextRequest));
-					process.setProcessState(nextRequest, state);
 					
-					device.CPURequest(clock, requestTime, str, process.getPriority(nextRequest));
+					//std::cout<<"Process "<<nextRequest<<" RequestT "<<requestTime<<"\n";
+					
+					requestTime = data.getTime(process.getCurrentLine(nextRequest));
+					
+					state = device.CPURequest(clock, requestTime, str, process.getPriority(nextRequest));
+					
+					if(state == "RUNNING")
+					{
+						process.addToCoreTime(nextRequest, requestTime);
+					}
+					
+					process.setProcessState(nextRequest, state);
 				}
 				else
 				{

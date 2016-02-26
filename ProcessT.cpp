@@ -107,8 +107,9 @@ void ProcessT::addToProcessTime(int pid, int time)
 
 void ProcessT::addToCoreTime(int pid, int time)
 {
+	//if(pid == 0)
+		//std::cout<<"Process "<<pid<<" has "<<processCoreTime[pid]<<" + "<<time<<" = "<<processCoreTime[pid]+time<<" core time\n";
 	processCoreTime[pid] = processCoreTime[pid] + time;
-	std::cout<<"Process "<<pid<<" has "<<processCoreTime[pid]<<" core time\n";
 }
 
 std::vector<int> ProcessT::getStartTime()
